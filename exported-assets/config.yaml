@@ -1,0 +1,139 @@
+# config.yaml
+# Hull Tactical Market Prediction 配置文件
+
+# ==================== 数据配置 ====================
+data:
+  raw_path: './data/raw/'
+  processed_path: './data/processed/'
+  train_file: 'train.csv'
+  test_file: 'test.csv'
+
+# ==================== 特征工程配置 ====================
+feature_engineering:
+  # 缺失值处理策略: median, mean, forward_fill, zero
+  missing_strategy: 'median'
+  
+  # 滞后特征
+  create_lag_features: true
+  lag_periods: [1, 2, 3, 5, 10, 20]
+  
+  # 滚动窗口特征
+  create_rolling_features: true
+  rolling_windows: [5, 10, 20, 30, 60]
+  rolling_stats: ['mean', 'std']  # mean, std, min, max, median
+  
+  # 动量特征
+  create_momentum_features: true
+  momentum_periods: [5, 10, 20]
+  
+  # 波动率特征
+  create_volatility_features: false
+  volatility_windows: [5, 10, 20]
+  
+  # 交互特征
+  create_interaction_features: false
+  
+  # 特征选择
+  remove_low_variance: false
+  variance_threshold: 0.01
+
+# ==================== 模型配置 ====================
+model:
+  # 交叉验证
+  cv_strategy: 'time_series'  # time_series, kfold
+  cv_splits: 5
+  
+  # 随机种子
+  random_state: 42
+  
+  # 要训练的模型列表
+  models_to_train: ['ridge', 'lasso', 'lgbm', 'xgb', 'catboost']
+  
+  # 并行处理
+  n_jobs: -1  # -1 表示使用所有CPU核心
+
+# ==================== LightGBM 参数 ====================
+lgbm:
+  n_estimators: 300
+  learning_rate: 0.05
+  max_depth: 7
+  num_leaves: 63
+  min_child_samples: 20
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_alpha: 0.1
+  reg_lambda: 0.5
+  random_state: 42
+  verbose: -1
+
+# ==================== XGBoost 参数 ====================
+xgb:
+  n_estimators: 300
+  learning_rate: 0.05
+  max_depth: 7
+  min_child_weight: 3
+  subsample: 0.8
+  colsample_bytree: 0.8
+  gamma: 0.1
+  reg_alpha: 0.1
+  reg_lambda: 1.0
+  random_state: 42
+  tree_method: 'hist'
+
+# ==================== CatBoost 参数 ====================
+catboost:
+  iterations: 300
+  learning_rate: 0.05
+  depth: 7
+  l2_leaf_reg: 3
+  random_state: 42
+  verbose: False
+
+# ==================== 集成配置 ====================
+ensemble:
+  # 集成策略: simple_average, weighted_average, median, rank_average, stacking
+  strategy: 'weighted_average'
+  
+  # Stacking 配置
+  stacking:
+    use_stacking: false
+    meta_model: 'ridge'  # ridge, lasso, elasticnet
+    cv_folds: 3
+
+# ==================== 超参数调优配置 ====================
+tuning:
+  enable: false
+  method: 'random_search'  # random_search, grid_search, bayesian
+  n_iter: 50
+  cv_splits: 3
+  scoring: 'neg_mean_squared_error'
+
+# ==================== 输出配置 ====================
+output:
+  # 输出路径
+  submissions_path: './outputs/submissions/'
+  models_path: './outputs/models/'
+  figures_path: './outputs/figures/'
+  logs_path: './outputs/logs/'
+  
+  # 保存选项
+  save_models: true
+  save_predictions: true
+  save_cv_results: true
+  create_figures: true
+  
+  # 提交文件前缀
+  submission_prefix: 'submission'
+
+# ==================== 日志配置 ====================
+logging:
+  level: 'INFO'  # DEBUG, INFO, WARNING, ERROR
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  file: './outputs/logs/training.log'
+  console: true
+
+# ==================== 实验追踪配置 ====================
+mlflow:
+  enable: false
+  experiment_name: 'hull_tactical_prediction'
+  tracking_uri: './mlruns'
